@@ -104,7 +104,7 @@ public class Controller implements Initializable {
 
             readParams();
             setSartParameters();
-            final Parent root = FXMLLoader.load(getClass().getResource("/chart.fxml"));
+            final Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("fxml/chart.fxml"));
             pane.setContent(root);
 
             borderPane.setCenter(pane);
@@ -209,7 +209,9 @@ public class Controller implements Initializable {
                 }
             });
 
-            pane.hvalueProperty().addListener((observable, oldValue, newValue) -> scale());
+            pane.hvalueProperty().addListener((observable, oldValue, newValue) ->
+                    scale()
+            );
 
             getChart().setOnMousePressed(event -> {
                 Node chartPlotBackground = getChart().lookup(".chart-plot-background");
@@ -357,6 +359,7 @@ public class Controller implements Initializable {
         int offset = (int) (pane.getHvalue() * 1000);
         if (offset != direct) {
 
+
             int current = (int) -(minX / CANDLE_GAP);
             if (current > rightBound) {
                 rightPos += boundShift;
@@ -364,13 +367,9 @@ public class Controller implements Initializable {
                 rightBound += boundShift;
                 leftBound += boundShift;
 
-                System.out.println(
-                        "Ranging graph rp = " + rightPos + " lp = " + leftPos + " rb = " + rightBound + " lb = " + leftBound);
-
                 subList = bars.subList(leftPos, rightPos);
 
                 ((CategoryAxis) getChart().getXAxis()).setStartMargin(leftPos * CANDLE_GAP);
-//                ((CategoryAxis) getChart().getXAxis()).setEndMargin(0);
                 ((CategoryAxis) getChart().getXAxis()).setEndMargin(bars.size() * CANDLE_GAP - rightPos * CANDLE_GAP);
 
                 getChart().setBarsToDisplay(subList);
@@ -388,7 +387,6 @@ public class Controller implements Initializable {
                 getChart().setBarsToDisplay(subList);
 
                 ((CategoryAxis) getChart().getXAxis()).setStartMargin(leftPos * CANDLE_GAP);
-//                ((CategoryAxis) getChart().getXAxis()).setEndMargin(0);
                 ((CategoryAxis) getChart().getXAxis()).setEndMargin(bars.size() * CANDLE_GAP - rightPos * CANDLE_GAP);
 
             }
@@ -469,6 +467,7 @@ public class Controller implements Initializable {
 
     private double getMaxBar(List<BarData> bars, int ofsett) {
         double max = bars.get(ofsett).getHigh();
+        System.out.println("searching for MAX");
         for (int i = 1 + ofsett; i < 66 + ofsett; i++) {
             double high = bars.get(i).getHigh();
             if (high > max) {
@@ -480,6 +479,7 @@ public class Controller implements Initializable {
 
     private double getMinBar(List<BarData> bars, int ofsett) {
         double min = bars.get(ofsett).getLow();
+        System.out.println("searching for MIN");
         for (int i = 1 + ofsett; i < 66 + ofsett; i++) {
             double low = bars.get(i).getLow();
             if (low < min) {

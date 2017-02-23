@@ -103,7 +103,7 @@ public class CandleStickChart extends XYChart<String, Number> {
         yAxis.forceZeroInRangeProperty().setValue(Boolean.FALSE);
         setTitle(title);
         setAnimated(false);
-        getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
+        getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         xAxis.setAnimated(false);
         yAxis.setAnimated(false);
         verticalGridLinesVisibleProperty().set(false);
