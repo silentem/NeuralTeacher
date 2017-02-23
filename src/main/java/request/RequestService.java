@@ -32,8 +32,8 @@ public class RequestService implements Request {
     public List<BarData> getBarData(){
 
         List<String> result = makeRequest(generateRequestString());
-        barData.clear();
-        startDates.clear();
+        barData = new ArrayList<>();
+        startDates = new ArrayList<>();
         int i = 0;
         index = 0;
         for (String cortage: result) {
@@ -53,7 +53,7 @@ public class RequestService implements Request {
         GregorianCalendar tmpCalendar = new GregorianCalendar();
         String[] params = bar.split(",");
         if(params[0].startsWith("a")){
-            String time = params[0].substring(1);
+            String time = params[0].substring(1)+"000";
             Date d = new Date(Long.parseLong(time));
             DateFormat formatte = new SimpleDateFormat("dd hh:mm:ss");
             System.out.println(formatte.format(d));

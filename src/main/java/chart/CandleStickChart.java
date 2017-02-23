@@ -221,7 +221,7 @@ public class CandleStickChart extends XYChart<String, Number> {
                     candle.update(close - y, high - y, low - y, candleWidth);
 
                     // update tooltip content
-                    candle.updateTooltip(bar.getOpen(), bar.getClose(), bar.getHigh(), bar.getLow());
+//                    candle.updateTooltip(bar.getOpen(), bar.getClose(), bar.getHigh(), bar.getLow());
 
                     // position the candle
                     candle.setLayoutX(x);
@@ -398,7 +398,7 @@ public class CandleStickChart extends XYChart<String, Number> {
         private String seriesStyleClass;
         private String dataStyleClass;
         private boolean openAboveClose = true;
-        private final Tooltip tooltip = new Tooltip();
+//        private final Tooltip tooltip = new Tooltip();
 
         private Candle(String seriesStyleClass, String dataStyleClass) {
             setAutoSizeChildren(false);
@@ -406,8 +406,14 @@ public class CandleStickChart extends XYChart<String, Number> {
             this.seriesStyleClass = seriesStyleClass;
             this.dataStyleClass = dataStyleClass;
             updateStyleClasses();
-            tooltip.setGraphic(new TooltipContent());
-            Tooltip.install(bar, tooltip);
+            this.setOnMouseEntered(event -> {
+                Tooltip tooltip = new Tooltip();
+                tooltip.setGraphic(new TooltipContent());
+                Tooltip.install(bar, tooltip);
+                System.out.println("Tooltip has shown!");
+            });
+//            tooltip.setGraphic(new TooltipContent());
+//            Tooltip.install(bar, tooltip);
         }
 
         public void setSeriesAndDataStyleClasses(String seriesStyleClass, String dataStyleClass) {
@@ -431,10 +437,10 @@ public class CandleStickChart extends XYChart<String, Number> {
             }
         }
 
-        public void updateTooltip(double open, double close, double high, double low) {
-            TooltipContent tooltipContent = (TooltipContent) tooltip.getGraphic();
-            tooltipContent.update(open, close, high, low);
-        }
+//        public void updateTooltip(double open, double close, double high, double low) {
+//            TooltipContent tooltipContent = (TooltipContent) tooltip.getGraphic();
+//            tooltipContent.update(open, close, high, low);
+//        }
 
         private void updateStyleClasses() {
             getStyleClass().setAll("candlestick-candle", seriesStyleClass, dataStyleClass);

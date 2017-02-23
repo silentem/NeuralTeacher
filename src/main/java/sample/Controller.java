@@ -114,6 +114,7 @@ public class Controller implements Initializable {
 
             btnReloadData.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
                 getChart().getYAxis().translateXProperty().unbind();
+                getChart().getData().clear();
                 int interval;
                 int selectedIndex = intervalType.getSelectionModel().getSelectedIndex();
                 switch (selectedIndex) {
@@ -135,7 +136,7 @@ public class Controller implements Initializable {
                 subList = bars.subList(leftPos, rightPos);
 
                 getChart().setBarsToDisplay(subList);
-                getChart().setPrefWidth(bars.size() * CANDLE_GAP);
+                getChart().setPrefWidth(bars.size()/*subList.size()*/ * CANDLE_GAP);
 
                 ((CategoryAxis) getChart().getXAxis()).setEndMargin(bars.size() * CANDLE_GAP - subList.size() * CANDLE_GAP);
 
@@ -143,7 +144,7 @@ public class Controller implements Initializable {
                     group.getChildren().remove(l);
                 }
 
-                lines.clear();
+                lines = new ArrayList<>();
 
                 for (Integer date : service.getStartDates()) {
                     System.out.println("date = " + date);
