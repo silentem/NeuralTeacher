@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.collections.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<GridPane fx:id="main" alignment="CENTER" hgap="10.0" prefHeight="800.0" prefWidth="1000.0" vgap="10.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="sample.Controller">
+  <children>
+    <BorderPane fx:id="borderPane" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+      <bottom>
+        <Pane prefHeight="109.0" prefWidth="624.0">
+          <children>
+            <Button fx:id="btnAddPattern" layoutX="14.0" layoutY="60.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="118.0" text="Add pattern" />
+            <Button fx:id="btnReloadData" layoutX="558.0" layoutY="14.0" mnemonicParsing="false" prefHeight="28.0001220703125" prefWidth="118.0" text="Reload data" />
+            <Button fx:id="btnSaveToMemory" layoutX="418.0" layoutY="58.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="118.0" text="Save to memory" />
+            <Button fx:id="btnAddCompany" layoutX="14.0" layoutY="11.0" mnemonicParsing="false" prefHeight="28.000099999997474" prefWidth="118.00009999999747" text="Add company" />
+            <TextField fx:id="textCompany" layoutX="273.0" layoutY="14.0" prefHeight="28.0" prefWidth="128.0" />
+            <TextField fx:id="textPattern" layoutX="273.0" layoutY="58.0" prefHeight="28.0" prefWidth="128.0000168945262" />
+            <ComboBox fx:id="patternType" layoutX="146.0" layoutY="60.0" prefHeight="28.000099999997474" prefWidth="118.0">
+              <items>
+                <FXCollections fx:factory="observableArrayList" />
+              </items>
+            </ComboBox>
+            <ComboBox fx:id="companyType" layoutX="146.0" layoutY="14.0" prefHeight="28.0" prefWidth="118.0">
+              <items>
+                <FXCollections fx:factory="observableArrayList" />
+              </items>
+            </ComboBox>
+            <ComboBox fx:id="intervalType" layoutX="418.0" layoutY="14.0" prefHeight="28.0001220703125" prefWidth="117.99996948242188">
+              <items>
+                <FXCollections fx:factory="observableArrayList" />
+              </items>
+            </ComboBox>
+          </children>
+        </Pane>
+      </bottom>
+    </BorderPane>
+  </children>
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+</GridPane>

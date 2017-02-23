@@ -1,0 +1,35 @@
+.candlestick-tooltip-label {
+    -fx-font-size: 0.75em;
+    -fx-font-weight: bold;
+    -fx-text-fill: #666666;
+    -fx-padding: 2 5 2 0;
+}
+.candlestick-average-line {
+    -fx-stroke: #106ece;
+    -fx-stroke-width: 2px;
+}
+
+.candlestick-candle {
+    -fx-background-color: rgb(255,34,34,1.00);
+}
+
+.candlestick-line {
+    -fx-stroke: #666666;
+    -fx-stroke-width: 2px;
+}
+
+
+.candlestick-bar.close-above-open {
+    -fx-background-color: rgb(81, 225, 83);
+    -fx-border-width: 1, 1,1,1;
+    -fx-border-color: #aae2c4;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);
+}
+
+.candlestick-bar.open-above-close {
+    -fx-background-color: rgb(255, 79, 65);
+    -fx-border-width: 1, 1,1,1;
+    -fx-font-weight: bold;
+    -fx-border-color: #e28c93;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);
+}
