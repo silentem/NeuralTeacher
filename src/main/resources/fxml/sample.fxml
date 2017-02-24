@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.shape.*?>
 <?import java.lang.*?>
 <?import javafx.collections.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<GridPane fx:id="main" alignment="CENTER" hgap="10.0" prefHeight="800.0" prefWidth="1000.0" vgap="10.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="sample.Controller">
+<GridPane fx:id="main" alignment="CENTER" hgap="10.0" prefHeight="800.0" prefWidth="1000.0" vgap="10.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
   <children>
     <BorderPane fx:id="borderPane" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
       <bottom>
@@ -32,6 +33,10 @@
                 <FXCollections fx:factory="observableArrayList" />
               </items>
             </ComboBox>
+                  <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="12.0" layoutX="811.0" layoutY="28.0" stroke="BLACK" strokeType="INSIDE" width="11.0" />
+                  <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#ff1f1f" height="12.0" layoutX="811.0" layoutY="68.0" stroke="BLACK" strokeType="INSIDE" width="11.0" />
+                  <Label layoutX="837.0" layoutY="23.0" text="New day" />
+                  <Label layoutX="837.0" layoutY="63.0" text="New countdown" />
           </children>
         </Pane>
       </bottom>

@@ -3,8 +3,11 @@ package sample;
 import chart.BarData;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -78,6 +81,7 @@ public class Controller implements Initializable {
     private int countPatterns;
     private int firstCountPatterns;
 
+
     private int leftPos = 0;
     private int leftBound = 0;
     private int rightBound = 200;
@@ -107,14 +111,37 @@ public class Controller implements Initializable {
             final Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("fxml/chart.fxml"));
             pane.setContent(root);
 
+            getChart().setPrefWidth(1000);
+            getChart().setPrefHeight(850);
+
             borderPane.setCenter(pane);
 
+
+
             group = ((Group) root);
+
+            rectangle.setManaged(false);
+            rectangle.setFill(Color.LIGHTSEAGREEN.deriveColor(0, 1, 1, 0.5));
             group.getChildren().add(rectangle);
+            setUpZooming(rectangle, getChart());
 
             btnReloadData.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+
+
+                leftPos = 0;
+                leftBound = 0;
+//                rightBound = (int) (pane.getViewportBounds().getWidth() / 10)*2;
+//                rightPos = (int) (pane.getViewportBounds().getWidth() / 10)*3;
+//
+//                boundShift = (int) (pane.getViewportBounds().getWidth() / 10);
+                rightBound = 200;
+                rightPos = 300 /*(int) (pane.getViewportBounds().getWidth() / 10)*3*/;
+
+                boundShift = 100;
+
                 getChart().getYAxis().translateXProperty().unbind();
                 getChart().getData().clear();
+
                 int interval;
                 int selectedIndex = intervalType.getSelectionModel().getSelectedIndex();
                 switch (selectedIndex) {
@@ -130,40 +157,29 @@ public class Controller implements Initializable {
                     default:
                         interval = 600;
                 }
-                service.setCompany(companyType.getSelectionModel().getSelectedItem().toString());
+                String company = companyType.getSelectionModel().getSelectedItem().toString().toUpperCase();
+                service.setCompany(company);
                 service.setInterval(interval);
                 bars = service.getBarData();
+
+                pane.hvalueProperty().set(0);
+                leftPos = 0;
+                leftBound = 0;
+                rightBound = bars.size() > rightPos ? rightBound : bars.size();
+                rightPos = bars.size() > rightPos ? rightPos : bars.size();
+
                 subList = bars.subList(leftPos, rightPos);
 
+                ((CategoryAxis) getChart().getXAxis()).setStartMargin(leftPos * CANDLE_GAP);
+                ((CategoryAxis) getChart().getXAxis()).setEndMargin(bars.size() * CANDLE_GAP - rightPos * CANDLE_GAP);
+
                 getChart().setBarsToDisplay(subList);
-                getChart().setPrefWidth(bars.size()/*subList.size()*/ * CANDLE_GAP);
+                getChart().setPrefWidth(bars.size() * CANDLE_GAP);
 
-                ((CategoryAxis) getChart().getXAxis()).setEndMargin(bars.size() * CANDLE_GAP - subList.size() * CANDLE_GAP);
-
-                for (Line l : lines) {
-                    group.getChildren().remove(l);
-                }
-
-                lines = new ArrayList<>();
-
-                for (Integer date : service.getStartDates()) {
-                    System.out.println("date = " + date);
-                    double pos = date * CANDLE_GAP;
-                    double shiftX = getChart().getYAxis().getWidth();
-                    Line line = new Line();
-
-                    line.setStyle("-fx-stroke: red;");
-                    System.out.println("p: " + pos);
-                    line.setStartX(pos + shiftX);
-                    line.setEndX(pos + shiftX);
-                    line.setStartY(0);
-                    line.setEndY(getChart().getHeight());
-                    lines.add(line);
-                    group.getChildren().add(line);
-                }
 
                 System.out.println("size = " + service.getStartDates().size());
 
+                setupLines();
 
                 double offset = pane.getHvalue();
                 offset *= 1000;
@@ -184,31 +200,47 @@ public class Controller implements Initializable {
                                         getChart().widthProperty()
                                                 .subtract(
                                                         pane.getViewportBounds().getWidth())));
+
+                pane.widthProperty().addListener(new ChangeListener<Number>() {
+                    @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
+                        getChart().getYAxis().translateXProperty().bind(
+                                pane.hvalueProperty()
+                                        .multiply(
+                                                getChart().widthProperty()
+                                                        .subtract((Double) newSceneWidth)));
+                    }
+                });
+                pane.heightProperty().addListener(new ChangeListener<Number>() {
+                    @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
+                        getChart().setPrefHeight(pane.getHeight() - 350);
+                    }
+                });
+
             });
 
-
-            getChart().setOnScroll((event) -> {
-                double deltaY = event.getDeltaY();
-                if (deltaY < 0) {
-                    if (getChart().getPrefHeight() > pane.getHeight()) {
-                        getChart().setPrefWidth(getChart().getWidth() - 60);
-                        getChart().setPrefHeight(getChart().getHeight() - 20);
-                        for (Line l :
-                                lines) {
-                            l.setEndY(l.getEndY() - 20);
-                        }
-                        scale();
-                    }
-                } else {
-                    getChart().setPrefWidth(getChart().getWidth() + 60);
-                    getChart().setPrefHeight(getChart().getHeight() + 20);
-                    for (Line l :
-                            lines) {
-                        l.setEndY(l.getEndY() + 20);
-                    }
-                    scale();
-                }
-            });
+//scroll
+//            getChart().setOnScroll((event) -> {
+//                double deltaY = event.getDeltaY();
+//                if (deltaY < 0) {
+//                    if (getChart().getPrefHeight() > pane.getHeight()) {
+//                        getChart().setPrefWidth(getChart().getWidth() - 60);
+//                        getChart().setPrefHeight(getChart().getHeight() - 20);
+//                        for (Line l :
+//                                lines) {
+//                            l.setEndY(l.getEndY() - 20);
+//                        }
+//                        scale();
+//                    }
+//                } else {
+//                    getChart().setPrefWidth(getChart().getWidth() + 60);
+//                    getChart().setPrefHeight(getChart().getHeight() + 20);
+//                    for (Line l :
+//                            lines) {
+//                        l.setEndY(l.getEndY() + 20);
+//                    }
+//                    scale();
+//                }
+//            });
 
             pane.hvalueProperty().addListener((observable, oldValue, newValue) ->
                     scale()
@@ -231,6 +263,8 @@ public class Controller implements Initializable {
                 rectangle.setHeight(0);
             });
             getChart().setOnMouseDragged(event -> {
+                rectangle.setFill(new Color(0.0f, 0.3f, 0.0f, 0.2f));
+                rectangle.setStroke(Color.AQUA);
                 double x = event.getX();
                 double y = event.getY();
                 rectangle.setX(Math.min(x, mouseProperty.get().getX()));
@@ -303,15 +337,16 @@ public class Controller implements Initializable {
                     System.out.println("First candle in range: " + fistrIndexInRange + "Second candle in range: " + lastIndexInRange);
 
 
-                    ArrayList<BarData> resultList = service.getParametersToWrite(fistrIndexInRange, lastIndexInRange);
+                    List<BarData> resultList = getParametersToWrite(subList, fistrIndexInRange, lastIndexInRange);
                     BufferedWriter writer = null;
                     try {
                         writer = new BufferedWriter(new FileWriter("memory.csv", true));
                         int sizeOfList = resultList.size();
                         //доповнення нулями
                         if (sizeOfList < 30) {
+                            BarData firstBar = resultList.get(0);
                             while (sizeOfList++ < 30) {
-                                writer.write("0.0, 0.0, 0.0, 0.0, ");
+                                writer.write(firstBar.getStringToFile());
                             }
                         }
                         ///запис барів
@@ -343,13 +378,55 @@ public class Controller implements Initializable {
                 }
             });
             btnAddCompany.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+                String company;
+                company = textCompany.getText();
+                company.toUpperCase();
+                if (!company.equals("")) {
+                    companyItems.add(company);
+                    textCompany.clear();
+                    appendParameter("company.txt", company);
 
+                }
             });
             btnAddPattern.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+                String pattern;
+                pattern = textPattern.getText();
+                if (!pattern.equals("")) {
+                    patternItems.add(pattern);
+                    textPattern.clear();
+                    countPatterns += 1;
+                    appendParameter("patterns.txt", pattern);
 
+                }
             });
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private List<BarData> getParametersToWrite(List<BarData> mainList, int from, int to) {
+        List<BarData> resultList = new ArrayList<BarData>(Math.abs(from - to));
+        if (from != to) {
+            resultList.addAll(mainList.subList(Math.min(from, to), Math.max(from, to)));
+        }
+        return resultList;
+    }
+
+    private void appendParameter(String filePath, String parameter) {
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(filePath, true));
+            writer.write(parameter + "\n");
+        } catch (IOException e) {
+            System.out.println("Write " + filePath + " exception: " + e.getMessage());
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    System.out.println("Can't close " + parameter + " " + e.getMessage());
+                }
+            }
         }
     }
 
@@ -363,17 +440,20 @@ public class Controller implements Initializable {
 
             int current = (int) -(minX / CANDLE_GAP);
             if (current > rightBound) {
-                rightPos += boundShift;
+                rightPos = rightPos + boundShift > bars.size() ? bars.size() : rightPos + boundShift;
                 leftPos += boundShift;
                 rightBound += boundShift;
                 leftBound += boundShift;
 
                 subList = bars.subList(leftPos, rightPos);
 
+
                 ((CategoryAxis) getChart().getXAxis()).setStartMargin(leftPos * CANDLE_GAP);
                 ((CategoryAxis) getChart().getXAxis()).setEndMargin(bars.size() * CANDLE_GAP - rightPos * CANDLE_GAP);
 
                 getChart().setBarsToDisplay(subList);
+
+                setupLines();
 
 
             }
@@ -385,20 +465,75 @@ public class Controller implements Initializable {
 
                 subList = bars.subList(leftPos, rightPos);
 
-                getChart().setBarsToDisplay(subList);
 
                 ((CategoryAxis) getChart().getXAxis()).setStartMargin(leftPos * CANDLE_GAP);
                 ((CategoryAxis) getChart().getXAxis()).setEndMargin(bars.size() * CANDLE_GAP - rightPos * CANDLE_GAP);
+                getChart().setBarsToDisplay(subList);
+
+                setupLines();
 
             }
-            System.out.println("current = " + current);
+
             low = getMinBar(bars, current) - 0.5;
             high = getMaxBar(bars, current) + 0.5;
 
             ((NumberAxis) getChart().getYAxis()).setLowerBound(low);
             ((NumberAxis) getChart().getYAxis()).setUpperBound(high);
+
         }
         direct = offset;
+    }
+
+    private void setupLines() {
+        for (Line l : lines) {
+            group.getChildren().remove(l);
+        }
+
+        lines = new ArrayList<>();
+
+        for (Integer date : service.getStartDates()) {
+            if (date < rightPos && date >= leftPos) {
+                System.out.println("date = " + date);
+
+                String currDate = ((CategoryAxis) getChart().getXAxis()).getCategories().get(date - leftPos);
+
+                double pos = getChart().getXAxis().getDisplayPosition(currDate);
+                System.out.println("pos = " + pos);
+                System.out.println("currentADate = " + currDate);
+                System.out.println("pane = " + pane.getViewportBounds().getWidth());
+                System.out.println("chart = " + getChart().getWidth());
+                double shiftX = 69;
+                Line line = new Line();
+
+                line.setStyle("-fx-stroke: red;");
+                System.out.println("p: " + pos);
+                line.setStartX(pos + shiftX);
+                line.setEndX(pos + shiftX);
+                line.setStartY(0);
+                line.setEndY(getChart().getHeight());
+                lines.add(line);
+                group.getChildren().add(line);
+            }
+        }
+        for (Integer date : service.getDays()) {
+            if (date < rightPos && date >= leftPos) {
+                System.out.println("day = " + date);
+                String currDate = ((CategoryAxis) getChart().getXAxis()).getCategories().get(date - leftPos);
+                double pos = getChart().getXAxis().getDisplayPosition(currDate);
+                System.out.println("currentDay = " + bars.get(date).getDateTime().getTime());
+                double shiftX = 69;
+                Line line = new Line();
+
+                line.setStyle("-fx-stroke: blue;");
+                System.out.println("p: " + pos);
+                line.setStartX(pos + shiftX);
+                line.setEndX(pos + shiftX);
+                line.setStartY(0);
+                line.setEndY(getChart().getHeight());
+                lines.add(line);
+                group.getChildren().add(line);
+            }
+        }
     }
 
     private void readParams() {
@@ -455,10 +590,10 @@ public class Controller implements Initializable {
         return node.getParent() == null ? 0 : node.getBoundsInParent().getMinX() + xSceneShift(node.getParent());
     }
 
-    private int getIndexToCopyFromData(String xValue, ObservableList<XYChart.Data<String, Number>> serie) {
+    private int getIndexToCopyFromData(String xValue, ObservableList<XYChart.Data<String, Number>> series) {
         int index = 0;
-        for (XYChart.Data<String, Number> data : serie) {
-            if (xValue == data.getXValue()) {
+        for (XYChart.Data<String, Number> data : series) {
+            if (xValue.equals(data.getXValue())) {
                 return index;
             }
             ++index;
@@ -468,8 +603,7 @@ public class Controller implements Initializable {
 
     private double getMaxBar(List<BarData> bars, int ofsett) {
         double max = bars.get(ofsett).getHigh();
-        System.out.println("searching for MAX");
-        for (int i = 1 + ofsett; i < 66 + ofsett; i++) {
+        for (int i = 1 + ofsett; i < (int) (pane.getViewportBounds().getWidth() / CANDLE_GAP) + ofsett; i++) {
             double high = bars.get(i).getHigh();
             if (high > max) {
                 max = high;
@@ -480,13 +614,35 @@ public class Controller implements Initializable {
 
     private double getMinBar(List<BarData> bars, int ofsett) {
         double min = bars.get(ofsett).getLow();
-        System.out.println("searching for MIN");
-        for (int i = 1 + ofsett; i < 66 + ofsett; i++) {
+        for (int i = 1 + ofsett; i < (int) (pane.getViewportBounds().getWidth() / CANDLE_GAP) + ofsett; i++) {
             double low = bars.get(i).getLow();
             if (low < min) {
                 min = low;
             }
         }
         return min;
+    }
+
+    private void setUpZooming(final Rectangle rect, final Node zoomingNode) {
+        final ObjectProperty<Point2D> mouseAnchor = new SimpleObjectProperty<>();
+        zoomingNode.setOnMousePressed(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                mouseAnchor.set(new Point2D(event.getX(), event.getY()));
+                rect.setWidth(0);
+                rect.setHeight(0);
+            }
+        });
+        zoomingNode.setOnMouseDragged(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                double x = event.getX();
+                double y = event.getY();
+                rect.setX(Math.min(x, mouseAnchor.get().getX()));
+                rect.setY(Math.min(y, mouseAnchor.get().getY()));
+                rect.setWidth(Math.abs(x - mouseAnchor.get().getX()));
+                rect.setHeight(Math.abs(y - mouseAnchor.get().getY()));
+            }
+        });
     }
 }

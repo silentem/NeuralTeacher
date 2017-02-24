@@ -23,7 +23,7 @@
     -fx-background-color: rgb(81, 225, 83);
     -fx-border-width: 1, 1,1,1;
     -fx-border-color: #aae2c4;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);
+    /*-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);*/
 }
 
 .candlestick-bar.open-above-close {
@@ -31,5 +31,5 @@
     -fx-border-width: 1, 1,1,1;
     -fx-font-weight: bold;
     -fx-border-color: #e28c93;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);
+    /*-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);*/
 }

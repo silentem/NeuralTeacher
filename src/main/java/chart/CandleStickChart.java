@@ -41,6 +41,8 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
 import javafx.util.Duration;
 
+import static sample.ChartController.getChart;
+
 /**
  * A candlestick chart is a style of bar-chart used primarily to describe price
  * movements of a security, derivative, or currency over time.
@@ -53,7 +55,7 @@ import javafx.util.Duration;
  */
 public class CandleStickChart extends XYChart<String, Number> {
 
-    SimpleDateFormat sdf = new SimpleDateFormat("DD:HH:mm:ss");
+    SimpleDateFormat sdf = new SimpleDateFormat("MM:dd:HH:mm:ss");
     protected static final Logger logger = Logger.getLogger(CandleStickChart.class.getName());
     protected int maxBarsToDisplay;
     protected ObservableList<XYChart.Series<String, Number>> dataSeries;
@@ -97,8 +99,7 @@ public class CandleStickChart extends XYChart<String, Number> {
         this.yAxis = yAxis;
         this.maxBarsToDisplay = maxBarsToDisplay;
         setPrefHeight(600);
-
-        yAxis.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
+        xAxis.setTickLabelsVisible(false);
         yAxis.autoRangingProperty().set(false);
         yAxis.forceZeroInRangeProperty().setValue(Boolean.FALSE);
         setTitle(title);
@@ -106,7 +107,7 @@ public class CandleStickChart extends XYChart<String, Number> {
         getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         xAxis.setAnimated(false);
         yAxis.setAnimated(false);
-        verticalGridLinesVisibleProperty().set(false);
+        verticalGridLinesVisibleProperty().set(true);
         List<BarData> sublist = getSubList(bars, maxBarsToDisplay);
         setBarsToDisplay(sublist);
     }
@@ -398,7 +399,7 @@ public class CandleStickChart extends XYChart<String, Number> {
         private String seriesStyleClass;
         private String dataStyleClass;
         private boolean openAboveClose = true;
-//        private final Tooltip tooltip = new Tooltip();
+        private final Tooltip tooltip = new Tooltip();
 
         private Candle(String seriesStyleClass, String dataStyleClass) {
             setAutoSizeChildren(false);
@@ -406,12 +407,6 @@ public class CandleStickChart extends XYChart<String, Number> {
             this.seriesStyleClass = seriesStyleClass;
             this.dataStyleClass = dataStyleClass;
             updateStyleClasses();
-            this.setOnMouseEntered(event -> {
-                Tooltip tooltip = new Tooltip();
-                tooltip.setGraphic(new TooltipContent());
-                Tooltip.install(bar, tooltip);
-                System.out.println("Tooltip has shown!");
-            });
 //            tooltip.setGraphic(new TooltipContent());
 //            Tooltip.install(bar, tooltip);
         }
@@ -451,40 +446,40 @@ public class CandleStickChart extends XYChart<String, Number> {
         }
     }
 
-    private class TooltipContent extends GridPane {
-
-        private final Label openValue = new Label();
-        private final Label closeValue = new Label();
-        private final Label highValue = new Label();
-        private final Label lowValue = new Label();
-
-        private TooltipContent() {
-            Label open = new Label("OPEN:");
-            Label close = new Label("CLOSE:");
-            Label high = new Label("HIGH:");
-            Label low = new Label("LOW:");
-            open.getStyleClass().add("candlestick-tooltip-label");
-            close.getStyleClass().add("candlestick-tooltip-label");
-            high.getStyleClass().add("candlestick-tooltip-label");
-            low.getStyleClass().add("candlestick-tooltip-label");
-            setConstraints(open, 0, 0);
-            setConstraints(openValue, 1, 0);
-            setConstraints(close, 0, 1);
-            setConstraints(closeValue, 1, 1);
-            setConstraints(high, 0, 2);
-            setConstraints(highValue, 1, 2);
-            setConstraints(low, 0, 3);
-            setConstraints(lowValue, 1, 3);
-            getChildren().addAll(open, openValue, close, closeValue, high, highValue, low, lowValue);
-        }
-
-        public void update(double open, double close, double high, double low) {
-            openValue.setText(Double.toString(open));
-            closeValue.setText(Double.toString(close));
-            highValue.setText(Double.toString(high));
-            lowValue.setText(Double.toString(low));
-        }
-    }
+//    private class TooltipContent extends GridPane {
+//
+//        private final Label openValue = new Label();
+//        private final Label closeValue = new Label();
+//        private final Label highValue = new Label();
+//        private final Label lowValue = new Label();
+//
+//        private TooltipContent() {
+//            Label open = new Label("OPEN:");
+//            Label close = new Label("CLOSE:");
+//            Label high = new Label("HIGH:");
+//            Label low = new Label("LOW:");
+//            open.getStyleClass().add("candlestick-tooltip-label");
+//            close.getStyleClass().add("candlestick-tooltip-label");
+//            high.getStyleClass().add("candlestick-tooltip-label");
+//            low.getStyleClass().add("candlestick-tooltip-label");
+//            setConstraints(open, 0, 0);
+//            setConstraints(openValue, 1, 0);
+//            setConstraints(close, 0, 1);
+//            setConstraints(closeValue, 1, 1);
+//            setConstraints(high, 0, 2);
+//            setConstraints(highValue, 1, 2);
+//            setConstraints(low, 0, 3);
+//            setConstraints(lowValue, 1, 3);
+//            getChildren().addAll(open, openValue, close, closeValue, high, highValue, low, lowValue);
+//        }
+//
+//        public void update(double open, double close, double high, double low) {
+//            openValue.setText(Double.toString(open));
+//            closeValue.setText(Double.toString(close));
+//            highValue.setText(Double.toString(high));
+//            lowValue.setText(Double.toString(low));
+//        }
+//    }
 
     protected static CandleStickChart chart;
 

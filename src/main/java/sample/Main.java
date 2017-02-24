@@ -23,9 +23,12 @@ public class Main extends Application {
                 .getResource("/fxml/sample.fxml"));
 
         primaryStage.setScene(new Scene(root));
-        primaryStage.setResizable(false);
+        primaryStage.setResizable(true);
+        primaryStage.setMaximized(true);
         primaryStage.setTitle("NeuralTeacher");
         primaryStage.show();
+
+        System.out.println(com.sun.javafx.runtime.VersionInfo.getRuntimeVersion());
 
 
 

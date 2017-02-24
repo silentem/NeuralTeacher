@@ -17,11 +17,18 @@ public class RequestService implements Request {
     private final String request = "https://www.google.com/finance/getprices?";
     private String company;
     private Integer interval;
+
     private GregorianCalendar date = new GregorianCalendar();
-    private List<BarData> barData = new ArrayList<BarData>();
+    private Date nextDate;
+    private List<BarData> barDatas= new ArrayList<BarData>();
+
     private ArrayList<Integer> startDates = new ArrayList<Integer>();
-    private ArrayList<String> days = new ArrayList<>();
-    private final int COUNT_BARS = 1000;
+    private ArrayList<Integer> days = new ArrayList<>();
+
+    private int currentDay;
+    private int nextDay;
+    private final int COUNTBARS = 800;
+
     private int index = 0;
     private String generateRequestString(){
         StringBuilder requestString = new StringBuilder();
@@ -29,20 +36,31 @@ public class RequestService implements Request {
         return requestString.toString();
     }
 
+public ArrayList<Integer> getDays() {
+        return days;
+    }
+
     public List<BarData> getBarData(){
 
         List<String> result = makeRequest(generateRequestString());
-        barData = new ArrayList<>();
-        startDates = new ArrayList<>();
-        int i = 0;
+
+        barDatas.clear();
+        startDates.clear();
+        days.clear();
         index = 0;
         for (String cortage: result) {
-            barData.add(parseBarFromString(cortage));
-            if(i++ > COUNT_BARS)
-                break;
-            ++index;
+            barDatas.add(parseBarFromString(cortage));
+            if(nextDay == currentDay){
+                //додавання початків днів
+                days.add(index);
+                System.out.println("Start day: " + index);
+                currentDay = nextDay;
+                nextDay+=1;
+
+            }
+            if(index++ > COUNTBARS) break;
         }
-        return barData;
+        return barDatas;
     }
 
     public ArrayList<Integer> getStartDates() {
@@ -50,14 +68,15 @@ public class RequestService implements Request {
     }
 
     public BarData parseBarFromString(String bar){
-        GregorianCalendar tmpCalendar = new GregorianCalendar();
+        DateFormat formate = new SimpleDateFormat("dd");
         String[] params = bar.split(",");
         if(params[0].startsWith("a")){
-            String time = params[0].substring(1)+"000";
+            String time = params[0].substring(1)+ "000";
             Date d = new Date(Long.parseLong(time));
-            DateFormat formatte = new SimpleDateFormat("dd hh:mm:ss");
-            System.out.println(formatte.format(d));
-            startDates.add(index);
+            currentDay = Integer.parseInt(formate.format(d));
+            System.out.println("Current day: " + this.index);
+            nextDay  = currentDay+1;
+            startDates.add(this.index);
             date.setTime(d);
         }
         BarData newBar = new BarData((GregorianCalendar)date.clone(),
@@ -66,14 +85,15 @@ public class RequestService implements Request {
                 Double.parseDouble(params[3]),//low
                 Double.parseDouble(params[1]),//close
                 1);
+        currentDay = Integer.parseInt(formate.format(date.getTime()));
         date.add(Calendar.MINUTE, interval/60);
         return  newBar;
     }
     public BarData getBarRightByIndex(int index){
-        return barData.get(128 + index);
+        return barDatas.get(128 + index);
     }
     public BarData getBarLeftByIndex(int index){
-        return barData.get(index);
+        return barDatas.get(index);
     }
     public List<String> makeRequest(String uri) {
         List<String> result = new ArrayList<String>(1000);
@@ -129,9 +149,8 @@ public class RequestService implements Request {
     public ArrayList<BarData> getParametersToWrite(int from, int to){
         ArrayList<BarData> resultList =  new ArrayList<BarData>(Math.abs(from-to));
         if(from!= to) {
-            resultList.addAll(barData.subList(Math.min(from, to), Math.max(from, to)));
+            resultList.addAll(barDatas.subList(Math.min(from, to), Math.max(from, to)));
         }
-
         return resultList;
     }
 }
