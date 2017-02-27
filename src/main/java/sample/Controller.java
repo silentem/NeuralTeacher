@@ -129,10 +129,10 @@ public class Controller implements Initializable {
 
                 leftPos = 0;
                 leftBound = 0;
-                rightBound = (int) (pane.getViewportBounds().getWidth() / 6)*2;
+                rightBound = (int) (pane.getViewportBounds().getWidth() / 4);
                 rightPos = (int) (pane.getViewportBounds().getWidth() / 6)*3;
 
-                boundShift = (int) (pane.getViewportBounds().getWidth() / 6)*1;
+                boundShift = (int) (pane.getViewportBounds().getWidth() / 6);
 //                rightBound = 200;
 //                rightPos = 300 /*(int) (pane.getViewportBounds().getWidth() / 10)*3*/;
 //
@@ -542,6 +542,7 @@ public class Controller implements Initializable {
                 double shiftX = 69;
                 Line line = new Line();
 
+                line.setStrokeWidth(0.5);
                 line.setStyle("-fx-stroke: blue;");
                 System.out.println("p: " + pos);
                 line.setStartX(pos + shiftX);
@@ -621,7 +622,7 @@ public class Controller implements Initializable {
 
     private double getMaxBar(List<BarData> bars, int offset) {
         double max = bars.get(offset).getHigh();
-        for (int i = 1 + offset; i < validate((int) (pane.getViewportBounds().getWidth() / CANDLE_GAP)+ offset); i++) {
+        for (int i = 1 + offset; i < /*validate(*/(int) (pane.getViewportBounds().getWidth() / CANDLE_GAP)+ offset/*)*/; i++) {
             double high = bars.get(i).getHigh();
             if (high > max) {
                 max = high;
@@ -631,7 +632,7 @@ public class Controller implements Initializable {
     }
 
     private int validate(int left){
-        return left > subList.size() ? subList.size() : left;
+        return left > bars.size() ? bars.size() : left;
     }
 
     private double getMinBar(List<BarData> bars, int offset) {
