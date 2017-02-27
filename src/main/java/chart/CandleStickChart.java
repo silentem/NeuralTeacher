@@ -107,7 +107,8 @@ public class CandleStickChart extends XYChart<String, Number> {
         getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         xAxis.setAnimated(false);
         yAxis.setAnimated(false);
-        verticalGridLinesVisibleProperty().set(true);
+        verticalGridLinesVisibleProperty().set(false);
+        horizontalGridLinesVisibleProperty().set(false);
         List<BarData> sublist = getSubList(bars, maxBarsToDisplay);
         setBarsToDisplay(sublist);
     }
@@ -217,7 +218,7 @@ public class CandleStickChart extends XYChart<String, Number> {
                     double close = getYAxis().getDisplayPosition(bar.getClose());
                     double high = getYAxis().getDisplayPosition(bar.getHigh());
                     double low = getYAxis().getDisplayPosition(bar.getLow());
-                    double candleWidth = 10;
+                    double candleWidth = 4;
                     // update candle
                     candle.update(close - y, high - y, low - y, candleWidth);
 

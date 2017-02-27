@@ -27,7 +27,7 @@ public class RequestService implements Request {
 
     private int currentDay;
     private int nextDay;
-    private final int COUNTBARS = 800;
+    private final int COUNTBARS = 3000;
 
     private int index = 0;
     private String generateRequestString(){

@@ -20,8 +20,10 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
@@ -38,7 +40,7 @@ import static sample.ChartController.getChart;
 public class Controller implements Initializable {
 
 
-    public static final int CANDLE_GAP = 15;
+    public static final int CANDLE_GAP = 5;
 
     static RequestService service = new RequestService();
     public List<BarData> bars;
@@ -65,12 +67,13 @@ public class Controller implements Initializable {
     public ComboBox patternType;
     @FXML
     public ComboBox intervalType;
-
-
     public double high, low;//межі аксіса
     public int direct = 0;
     public int indexMinElement, indexMaxElement;//для збереження індексів масиву
+
     public ObjectProperty<Point2D> mouseProperty = new SimpleObjectProperty<>();
+    @FXML
+    public GridPane bottomGrid;
     List<BarData> subList;
     ScrollPane pane = new ScrollPane();
     Rectangle rectangle = new Rectangle();
@@ -110,6 +113,7 @@ public class Controller implements Initializable {
             setSartParameters();
             final Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("fxml/chart.fxml"));
             pane.setContent(root);
+            pane.setPannable(true);
 
             getChart().setPrefWidth(1000);
             getChart().setPrefHeight(850);
@@ -120,24 +124,19 @@ public class Controller implements Initializable {
 
             group = ((Group) root);
 
-            rectangle.setManaged(false);
-            rectangle.setFill(Color.LIGHTSEAGREEN.deriveColor(0, 1, 1, 0.5));
-            group.getChildren().add(rectangle);
-            setUpZooming(rectangle, getChart());
-
             btnReloadData.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
 
 
                 leftPos = 0;
                 leftBound = 0;
-//                rightBound = (int) (pane.getViewportBounds().getWidth() / 10)*2;
-//                rightPos = (int) (pane.getViewportBounds().getWidth() / 10)*3;
-//
-//                boundShift = (int) (pane.getViewportBounds().getWidth() / 10);
-                rightBound = 200;
-                rightPos = 300 /*(int) (pane.getViewportBounds().getWidth() / 10)*3*/;
+                rightBound = (int) (pane.getViewportBounds().getWidth() / 6)*2;
+                rightPos = (int) (pane.getViewportBounds().getWidth() / 6)*3;
 
-                boundShift = 100;
+                boundShift = (int) (pane.getViewportBounds().getWidth() / 6)*1;
+//                rightBound = 200;
+//                rightPos = 300 /*(int) (pane.getViewportBounds().getWidth() / 10)*3*/;
+//
+//                boundShift = 100;
 
                 getChart().getYAxis().translateXProperty().unbind();
                 getChart().getData().clear();
@@ -176,7 +175,6 @@ public class Controller implements Initializable {
                 getChart().setBarsToDisplay(subList);
                 getChart().setPrefWidth(bars.size() * CANDLE_GAP);
 
-
                 System.out.println("size = " + service.getStartDates().size());
 
                 setupLines();
@@ -184,7 +182,7 @@ public class Controller implements Initializable {
                 double offset = pane.getHvalue();
                 offset *= 1000;
 
-                System.out.println((int) pane.getHvalue());
+                System.out.println("hvalue" + (int) pane.getHvalue());
                 double lowerBound = getMinBar(bars, (int) offset);
                 double upperBound = getMaxBar(bars, (int) offset);
                 ((NumberAxis) getChart().getYAxis()).setTickUnit((upperBound - lowerBound) / 10);
@@ -192,8 +190,8 @@ public class Controller implements Initializable {
                 low = getMinBar(bars, 0);
                 high = getMaxBar(bars, 0);
                 ((NumberAxis) getChart().getYAxis()).setTickUnit((high - low) / 10);
-                ((NumberAxis) getChart().getYAxis()).setLowerBound(low - 0.5);
-                ((NumberAxis) getChart().getYAxis()).setUpperBound(high + 0.5);
+                ((NumberAxis) getChart().getYAxis()).setLowerBound(low - 0.2);
+                ((NumberAxis) getChart().getYAxis()).setUpperBound(high + 0.2);
                 getChart().getYAxis().translateXProperty().bind(
                         pane.hvalueProperty()
                                 .multiply(
@@ -218,27 +216,47 @@ public class Controller implements Initializable {
 
             });
 
+            ToggleGroup toggleGroup = new ToggleGroup();
+            ToggleButton on = new ToggleButton("On");
+            ToggleButton off = new ToggleButton("Off");
+            off.setSelected(true);
+            on.setToggleGroup(toggleGroup);
+            off.setToggleGroup(toggleGroup);
+            on.selectedProperty().addListener(observable -> {
+                pane.setPannable(false);
+                rectangle.setManaged(false);
+                rectangle.setHeight(0);
+                rectangle.setWidth(0);
+                rectangle.setFill(Color.LIGHTSEAGREEN.deriveColor(0, 1, 1, 0.5));
+                ((Group) root).getChildren().add(rectangle);
+                setUpZooming(rectangle, getChart());
+            });
+            off.selectedProperty().addListener(observable -> {
+                pane.setPannable(true);
+                ((Group) root).getChildren().remove(rectangle);
+            });
+
+            HBox box = new HBox();
+            box.getChildren().add(on);
+            box.getChildren().add(off);
+            bottomGrid.add(box, 4,2);
+
+
 //scroll
-//            getChart().setOnScroll((event) -> {
-//                double deltaY = event.getDeltaY();
-//                if (deltaY < 0) {
-//                    if (getChart().getPrefHeight() > pane.getHeight()) {
-//                        getChart().setPrefWidth(getChart().getWidth() - 60);
-//                        getChart().setPrefHeight(getChart().getHeight() - 20);
-//                        for (Line l :
-//                                lines) {
-//                            l.setEndY(l.getEndY() - 20);
-//                        }
-//                        scale();
+
+//            pane.setOnScroll(new EventHandler<ScrollEvent>() {
+//                @Override
+//                public void handle(ScrollEvent event) {
+//                    double deltaX  = event.getDeltaX();
+//                    double i = pane.getHvalue();
+//                    if(deltaX < 0){
+//                        i-=0.001;
+//                        pane.setHvalue(i < 0 ? 0 : i);
+//                    }else{
+//                        i+=0.001;
+//                        pane.setHvalue(i > 1 ? 1 : i);
 //                    }
-//                } else {
-//                    getChart().setPrefWidth(getChart().getWidth() + 60);
-//                    getChart().setPrefHeight(getChart().getHeight() + 20);
-//                    for (Line l :
-//                            lines) {
-//                        l.setEndY(l.getEndY() + 20);
-//                    }
-//                    scale();
+//                    event.consume();
 //                }
 //            });
 
@@ -465,7 +483,6 @@ public class Controller implements Initializable {
 
                 subList = bars.subList(leftPos, rightPos);
 
-
                 ((CategoryAxis) getChart().getXAxis()).setStartMargin(leftPos * CANDLE_GAP);
                 ((CategoryAxis) getChart().getXAxis()).setEndMargin(bars.size() * CANDLE_GAP - rightPos * CANDLE_GAP);
                 getChart().setBarsToDisplay(subList);
@@ -505,6 +522,7 @@ public class Controller implements Initializable {
                 double shiftX = 69;
                 Line line = new Line();
 
+                line.setStrokeWidth(0.5);
                 line.setStyle("-fx-stroke: red;");
                 System.out.println("p: " + pos);
                 line.setStartX(pos + shiftX);
@@ -601,9 +619,9 @@ public class Controller implements Initializable {
         return -1;
     }
 
-    private double getMaxBar(List<BarData> bars, int ofsett) {
-        double max = bars.get(ofsett).getHigh();
-        for (int i = 1 + ofsett; i < (int) (pane.getViewportBounds().getWidth() / CANDLE_GAP) + ofsett; i++) {
+    private double getMaxBar(List<BarData> bars, int offset) {
+        double max = bars.get(offset).getHigh();
+        for (int i = 1 + offset; i < validate((int) (pane.getViewportBounds().getWidth() / CANDLE_GAP)+ offset); i++) {
             double high = bars.get(i).getHigh();
             if (high > max) {
                 max = high;
@@ -612,9 +630,13 @@ public class Controller implements Initializable {
         return max;
     }
 
-    private double getMinBar(List<BarData> bars, int ofsett) {
-        double min = bars.get(ofsett).getLow();
-        for (int i = 1 + ofsett; i < (int) (pane.getViewportBounds().getWidth() / CANDLE_GAP) + ofsett; i++) {
+    private int validate(int left){
+        return left > subList.size() ? subList.size() : left;
+    }
+
+    private double getMinBar(List<BarData> bars, int offset) {
+        double min = bars.get(offset).getLow();
+        for (int i = 1 + offset; i < validate((int) (pane.getViewportBounds().getWidth() / CANDLE_GAP)+ offset); i++) {
             double low = bars.get(i).getLow();
             if (low < min) {
                 min = low;
