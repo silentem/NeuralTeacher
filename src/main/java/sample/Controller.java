@@ -5,6 +5,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -260,9 +261,7 @@ public class Controller implements Initializable {
             );
 
             btnSaveToMemory.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-                System.out.println(countPatterns + " and " + firstCountPatterns);
                 if (countPatterns != firstCountPatterns) {
-                    System.out.println("in here");
                     ArrayList<String> entries = new ArrayList<>();
 
                     BufferedReader reader = null;
@@ -610,34 +609,41 @@ public class Controller implements Initializable {
 
     private void setUpZooming(final Rectangle rect, final Node zoomingNode) {
         final ObjectProperty<Point2D> mouseAnchor = new SimpleObjectProperty<>();
-        zoomingNode.setOnMousePressed(event -> {
-            Node chartPlotBackground = getChart().lookup(".chart-plot-background");
-            final double shiftX = xSceneShift(chartPlotBackground);
-            double x = event.getSceneX() - shiftX;
-            fistrIndexInRange = getIndexToCopyFromData(getChart().getXAxis().getValueForDisplay(x), getChart().getData().get(0).getData());
+        zoomingNode.setOnMousePressed(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                Node chartPlotBackground = getChart().lookup(".chart-plot-background");
+                final double shiftX = xSceneShift(chartPlotBackground);
+                double x = event.getSceneX() - shiftX;
+                fistrIndexInRange = getIndexToCopyFromData(getChart().getXAxis().getValueForDisplay(x), getChart().getData().get(0).getData());
 
-            mouseAnchor.set(new Point2D(event.getX(), event.getY()));
-            rect.setWidth(0);
-            rect.setHeight(0);
+                mouseAnchor.set(new Point2D(event.getX(), event.getY()));
+                rect.setWidth(0);
+                rect.setHeight(0);
+            }
         });
-        zoomingNode.setOnMouseDragged(event -> {
-            double x = event.getX();
-            double y = event.getY();
-            rect.setX(Math.min(x, mouseAnchor.get().getX()));
-            rect.setY(Math.min(y, mouseAnchor.get().getY()));
-            rect.setWidth(Math.abs(x - mouseAnchor.get().getX()));
-            rect.setHeight(Math.abs(y - mouseAnchor.get().getY()));
+        zoomingNode.setOnMouseDragged(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                double x = event.getX();
+                double y = event.getY();
+                rect.setX(Math.min(x, mouseAnchor.get().getX()));
+                rect.setY(Math.min(y, mouseAnchor.get().getY()));
+                rect.setWidth(Math.abs(x - mouseAnchor.get().getX()));
+                rect.setHeight(Math.abs(y - mouseAnchor.get().getY()));
+            }
         });
-        zoomingNode.setOnMouseReleased(event -> {
-            Node chartPlotBackground = getChart().lookup(".chart-plot-background");
-            final double shiftX = xSceneShift(chartPlotBackground);
+        zoomingNode.setOnMouseReleased(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                Node chartPlotBackground = getChart().lookup(".chart-plot-background");
+                final double shiftX = xSceneShift(chartPlotBackground);
 
-            double x = event.getSceneX() - shiftX;
-            lastIndexInRange = getIndexToCopyFromData(getChart().getXAxis().getValueForDisplay(x), getChart().getData().get(0).getData());
+                double x = event.getSceneX() - shiftX;
+                lastIndexInRange = getIndexToCopyFromData(getChart().getXAxis().getValueForDisplay(x), getChart().getData().get(0).getData());
 
-            firstCountPatterns = fistrIndexInRange;
-
-            segSize.setText(String.valueOf(Math.abs(lastIndexInRange - fistrIndexInRange)));
+                segSize.setText(String.valueOf(Math.abs(lastIndexInRange - fistrIndexInRange)));
+            }
         });
     }
 }

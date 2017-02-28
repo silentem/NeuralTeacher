@@ -45,8 +45,8 @@
                 <FXCollections fx:factory="observableArrayList" />
               </items>
             </ComboBox>
-            <Button fx:id="btnSaveToMemory" mnemonicParsing="false" prefHeight="28.0" prefWidth="118.0" text="Save to memory" GridPane.rowIndex="1" />
-                  <Button fx:id="btnReloadData" mnemonicParsing="false" text="Reload Data" />
+            <Button fx:id="btnSaveToMemory" mnemonicParsing="false" prefHeight="28.0" prefWidth="118.0" text="Save to memory" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                  <Button fx:id="btnReloadData" mnemonicParsing="false" text="Reload Data" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
                   <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="12.0" stroke="BLACK" strokeType="INSIDE" width="11.0" GridPane.columnIndex="5" />
                   <Label text="New day" GridPane.columnIndex="5">
                      <GridPane.margin>
