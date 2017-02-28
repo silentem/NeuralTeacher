@@ -11,7 +11,7 @@
   <children>
     <BorderPane fx:id="borderPane" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
          <bottom>
-            <GridPane fx:id="bottomGrid" hgap="5.0" vgap="5.0" BorderPane.alignment="CENTER">
+            <GridPane fx:id="bottomGrid" hgap="10.0" vgap="10.0" BorderPane.alignment="CENTER">
               <columnConstraints>
                   <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                   <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -23,10 +23,11 @@
               <rowConstraints>
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
                <children>
-            <Button fx:id="btnAddCompany" mnemonicParsing="false" prefHeight="28.000099999997474" prefWidth="118.00009999999747" text="Add company" />
-            <Button fx:id="btnAddPattern" mnemonicParsing="false" prefHeight="28.0" prefWidth="118.0" text="Add pattern" GridPane.rowIndex="1" />
+            <Button fx:id="btnAddCompany" mnemonicParsing="false" prefHeight="28.000099999997474" prefWidth="118.00009999999747" text="Add company" GridPane.columnIndex="3" />
+            <Button fx:id="btnAddPattern" mnemonicParsing="false" prefHeight="28.0" prefWidth="118.0" text="Add pattern" GridPane.columnIndex="3" GridPane.rowIndex="1" />
             <ComboBox fx:id="companyType" prefHeight="28.0" prefWidth="118.0" GridPane.columnIndex="1">
               <items>
                 <FXCollections fx:factory="observableArrayList" />
@@ -39,13 +40,13 @@
             </ComboBox>
             <TextField fx:id="textCompany" prefHeight="28.0" prefWidth="128.0" GridPane.columnIndex="2" />
             <TextField fx:id="textPattern" prefHeight="28.0" prefWidth="128.0000168945262" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-            <ComboBox fx:id="intervalType" prefHeight="28.0001220703125" prefWidth="117.99996948242188" GridPane.columnIndex="3">
+            <ComboBox fx:id="intervalType" prefHeight="28.0001220703125" prefWidth="117.99996948242188" GridPane.columnIndex="1" GridPane.rowIndex="2">
               <items>
                 <FXCollections fx:factory="observableArrayList" />
               </items>
             </ComboBox>
-            <Button fx:id="btnSaveToMemory" mnemonicParsing="false" prefHeight="28.0" prefWidth="118.0" text="Save to memory" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                  <Button fx:id="btnReloadData" mnemonicParsing="false" text="Reload Data" GridPane.columnIndex="4" />
+            <Button fx:id="btnSaveToMemory" mnemonicParsing="false" prefHeight="28.0" prefWidth="118.0" text="Save to memory" GridPane.rowIndex="1" />
+                  <Button fx:id="btnReloadData" mnemonicParsing="false" text="Reload Data" />
                   <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="12.0" stroke="BLACK" strokeType="INSIDE" width="11.0" GridPane.columnIndex="5" />
                   <Label text="New day" GridPane.columnIndex="5">
                      <GridPane.margin>
@@ -56,9 +57,15 @@
                      <GridPane.margin>
                         <Insets left="15.0" />
                      </GridPane.margin></Label>
+                  <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="2">
+                     <children>
+                        <Label text="Size: " />
+                        <Label fx:id="segSize" text="0" />
+                     </children>
+                  </HBox>
                </children>
                <padding>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </padding>
             </GridPane>
          </bottom>

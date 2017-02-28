@@ -3,11 +3,8 @@ package sample;
 import chart.BarData;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -20,7 +17,6 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -74,6 +70,8 @@ public class Controller implements Initializable {
     public ObjectProperty<Point2D> mouseProperty = new SimpleObjectProperty<>();
     @FXML
     public GridPane bottomGrid;
+    @FXML
+    public Label segSize;
     List<BarData> subList;
     ScrollPane pane = new ScrollPane();
     Rectangle rectangle = new Rectangle();
@@ -121,7 +119,6 @@ public class Controller implements Initializable {
             borderPane.setCenter(pane);
 
 
-
             group = ((Group) root);
 
             btnReloadData.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
@@ -130,13 +127,9 @@ public class Controller implements Initializable {
                 leftPos = 0;
                 leftBound = 0;
                 rightBound = (int) (pane.getViewportBounds().getWidth() / 4);
-                rightPos = (int) (pane.getViewportBounds().getWidth() / 6)*3;
+                rightPos = (int) (pane.getViewportBounds().getWidth() / 6) * 3;
 
                 boundShift = (int) (pane.getViewportBounds().getWidth() / 6);
-//                rightBound = 200;
-//                rightPos = 300 /*(int) (pane.getViewportBounds().getWidth() / 10)*3*/;
-//
-//                boundShift = 100;
 
                 getChart().getYAxis().translateXProperty().unbind();
                 getChart().getData().clear();
@@ -159,9 +152,20 @@ public class Controller implements Initializable {
                 String company = companyType.getSelectionModel().getSelectedItem().toString().toUpperCase();
                 service.setCompany(company);
                 service.setInterval(interval);
-                bars = service.getBarData();
+                try {
+                    bars = service.getBarData();
+                } catch (IOException e) {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Information");
+                    alert.setHeaderText(null);
+                    alert.setContentText("No internet connection or wrong URL");
+                    alert.initOwner(borderPane.getScene().getWindow());
+                    alert.showAndWait();
+                }
 
                 pane.hvalueProperty().set(0);
+                pane.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+                pane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
                 leftPos = 0;
                 leftBound = 0;
                 rightBound = bars.size() > rightPos ? rightBound : bars.size();
@@ -182,7 +186,6 @@ public class Controller implements Initializable {
                 double offset = pane.getHvalue();
                 offset *= 1000;
 
-                System.out.println("hvalue" + (int) pane.getHvalue());
                 double lowerBound = getMinBar(bars, (int) offset);
                 double upperBound = getMaxBar(bars, (int) offset);
                 ((NumberAxis) getChart().getYAxis()).setTickUnit((upperBound - lowerBound) / 10);
@@ -199,20 +202,12 @@ public class Controller implements Initializable {
                                                 .subtract(
                                                         pane.getViewportBounds().getWidth())));
 
-                pane.widthProperty().addListener(new ChangeListener<Number>() {
-                    @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
-                        getChart().getYAxis().translateXProperty().bind(
-                                pane.hvalueProperty()
-                                        .multiply(
-                                                getChart().widthProperty()
-                                                        .subtract((Double) newSceneWidth)));
-                    }
-                });
-                pane.heightProperty().addListener(new ChangeListener<Number>() {
-                    @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
-                        getChart().setPrefHeight(pane.getHeight() - 350);
-                    }
-                });
+                pane.widthProperty().addListener((observableValue, oldSceneWidth, newSceneWidth) -> getChart().getYAxis().translateXProperty().bind(
+                        pane.hvalueProperty()
+                                .multiply(
+                                        getChart().widthProperty()
+                                                .subtract((Double) newSceneWidth))));
+                pane.heightProperty().addListener((observableValue, oldSceneWidth, newSceneWidth) -> getChart().setPrefHeight(pane.getHeight() - 50));
 
             });
 
@@ -239,7 +234,7 @@ public class Controller implements Initializable {
             HBox box = new HBox();
             box.getChildren().add(on);
             box.getChildren().add(off);
-            bottomGrid.add(box, 4,2);
+            bottomGrid.add(box, 4, 0);
 
 
 //scroll
@@ -264,45 +259,10 @@ public class Controller implements Initializable {
                     scale()
             );
 
-            getChart().setOnMousePressed(event -> {
-                Node chartPlotBackground = getChart().lookup(".chart-plot-background");
-                final double shiftX = xSceneShift(chartPlotBackground);
-
-                double x = event.getSceneX() - shiftX;
-
-                fistrIndexInRange = getIndexToCopyFromData(getChart().getXAxis().getValueForDisplay(x), getChart().getData().get(0).getData());
-
-
-                mouseProperty.set(new Point2D(event.getX(), event.getY()));
-
-                rectangle.setX(event.getX());
-                rectangle.setY(event.getY());
-                rectangle.setWidth(0);
-                rectangle.setHeight(0);
-            });
-            getChart().setOnMouseDragged(event -> {
-                rectangle.setFill(new Color(0.0f, 0.3f, 0.0f, 0.2f));
-                rectangle.setStroke(Color.AQUA);
-                double x = event.getX();
-                double y = event.getY();
-                rectangle.setX(Math.min(x, mouseProperty.get().getX()));
-                rectangle.setY(Math.min(y, mouseProperty.get().getY()));
-                rectangle.setWidth(Math.abs(x - mouseProperty.get().getX()));
-                rectangle.setHeight(Math.abs(y - mouseProperty.get().getY()));
-            });
-            getChart().setOnMouseReleased(event -> {
-
-                rectangle.setFill(new Color(0.0f, 0.3f, 0.0f, 0.2f));
-                rectangle.setStroke(Color.AQUA);
-
-                Node chartPlotBackground = getChart().lookup(".chart-plot-background");
-                final double shiftX = xSceneShift(chartPlotBackground);
-                double x = event.getSceneX() - shiftX;
-                lastIndexInRange = getIndexToCopyFromData(getChart().getXAxis().getValueForDisplay(x), getChart().getData().get(0).getData());
-                System.out.println(fistrIndexInRange + " " + lastIndexInRange);
-            });
             btnSaveToMemory.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+                System.out.println(countPatterns + " and " + firstCountPatterns);
                 if (countPatterns != firstCountPatterns) {
+                    System.out.println("in here");
                     ArrayList<String> entries = new ArrayList<>();
 
                     BufferedReader reader = null;
@@ -333,6 +293,7 @@ public class Controller implements Initializable {
                             writer.write(entry);
                             writer.newLine();
                         }
+                        System.out.println("size = " + entries.size());
                     } catch (IOException ex) {
                         System.out.println("Rewrite" + ex.getMessage());
                     } finally {
@@ -390,8 +351,9 @@ public class Controller implements Initializable {
                 } else {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Information");
-                    alert.setHeaderText("Incorrect list of parameters!");
+                    alert.setHeaderText(null);
                     alert.setContentText("Incorrect number of parameters for network");
+                    alert.initOwner(borderPane.getScene().getWindow());
                     alert.showAndWait();
                 }
             });
@@ -423,7 +385,7 @@ public class Controller implements Initializable {
     }
 
     private List<BarData> getParametersToWrite(List<BarData> mainList, int from, int to) {
-        List<BarData> resultList = new ArrayList<BarData>(Math.abs(from - to));
+        List<BarData> resultList = new ArrayList<>(Math.abs(from - to));
         if (from != to) {
             resultList.addAll(mainList.subList(Math.min(from, to), Math.max(from, to)));
         }
@@ -622,7 +584,7 @@ public class Controller implements Initializable {
 
     private double getMaxBar(List<BarData> bars, int offset) {
         double max = bars.get(offset).getHigh();
-        for (int i = 1 + offset; i < /*validate(*/(int) (pane.getViewportBounds().getWidth() / CANDLE_GAP)+ offset/*)*/; i++) {
+        for (int i = 1 + offset; i < validate((int) (pane.getViewportBounds().getWidth() / CANDLE_GAP) + offset); i++) {
             double high = bars.get(i).getHigh();
             if (high > max) {
                 max = high;
@@ -631,13 +593,13 @@ public class Controller implements Initializable {
         return max;
     }
 
-    private int validate(int left){
+    private int validate(int left) {
         return left > bars.size() ? bars.size() : left;
     }
 
     private double getMinBar(List<BarData> bars, int offset) {
         double min = bars.get(offset).getLow();
-        for (int i = 1 + offset; i < validate((int) (pane.getViewportBounds().getWidth() / CANDLE_GAP)+ offset); i++) {
+        for (int i = 1 + offset; i < validate((int) (pane.getViewportBounds().getWidth() / CANDLE_GAP) + offset); i++) {
             double low = bars.get(i).getLow();
             if (low < min) {
                 min = low;
@@ -648,24 +610,34 @@ public class Controller implements Initializable {
 
     private void setUpZooming(final Rectangle rect, final Node zoomingNode) {
         final ObjectProperty<Point2D> mouseAnchor = new SimpleObjectProperty<>();
-        zoomingNode.setOnMousePressed(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                mouseAnchor.set(new Point2D(event.getX(), event.getY()));
-                rect.setWidth(0);
-                rect.setHeight(0);
-            }
+        zoomingNode.setOnMousePressed(event -> {
+            Node chartPlotBackground = getChart().lookup(".chart-plot-background");
+            final double shiftX = xSceneShift(chartPlotBackground);
+            double x = event.getSceneX() - shiftX;
+            fistrIndexInRange = getIndexToCopyFromData(getChart().getXAxis().getValueForDisplay(x), getChart().getData().get(0).getData());
+
+            mouseAnchor.set(new Point2D(event.getX(), event.getY()));
+            rect.setWidth(0);
+            rect.setHeight(0);
         });
-        zoomingNode.setOnMouseDragged(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                double x = event.getX();
-                double y = event.getY();
-                rect.setX(Math.min(x, mouseAnchor.get().getX()));
-                rect.setY(Math.min(y, mouseAnchor.get().getY()));
-                rect.setWidth(Math.abs(x - mouseAnchor.get().getX()));
-                rect.setHeight(Math.abs(y - mouseAnchor.get().getY()));
-            }
+        zoomingNode.setOnMouseDragged(event -> {
+            double x = event.getX();
+            double y = event.getY();
+            rect.setX(Math.min(x, mouseAnchor.get().getX()));
+            rect.setY(Math.min(y, mouseAnchor.get().getY()));
+            rect.setWidth(Math.abs(x - mouseAnchor.get().getX()));
+            rect.setHeight(Math.abs(y - mouseAnchor.get().getY()));
+        });
+        zoomingNode.setOnMouseReleased(event -> {
+            Node chartPlotBackground = getChart().lookup(".chart-plot-background");
+            final double shiftX = xSceneShift(chartPlotBackground);
+
+            double x = event.getSceneX() - shiftX;
+            lastIndexInRange = getIndexToCopyFromData(getChart().getXAxis().getValueForDisplay(x), getChart().getData().get(0).getData());
+
+            firstCountPatterns = fistrIndexInRange;
+
+            segSize.setText(String.valueOf(Math.abs(lastIndexInRange - fistrIndexInRange)));
         });
     }
 }
