@@ -5,7 +5,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -37,13 +36,11 @@ import static sample.ChartController.getChart;
 public class Controller implements Initializable {
 
 
-    public static final int CANDLE_GAP = 5;
+    private static final int CANDLE_GAP = 5;
 
-    static RequestService service = new RequestService();
-    public List<BarData> bars;
+    private static RequestService service = new RequestService();
     @FXML
     public GridPane main;
-
     @FXML
     public BorderPane borderPane;
     @FXML
@@ -67,19 +64,19 @@ public class Controller implements Initializable {
     public double high, low;//межі аксіса
     public int direct = 0;
     public int indexMinElement, indexMaxElement;//для збереження індексів масиву
-
     public ObjectProperty<Point2D> mouseProperty = new SimpleObjectProperty<>();
     @FXML
     public GridPane bottomGrid;
     @FXML
     public Label segSize;
-    List<BarData> subList;
-    ScrollPane pane = new ScrollPane();
-    Rectangle rectangle = new Rectangle();
-    Group group;
-    ObservableList<String> patternItems = FXCollections.observableArrayList();
-    ObservableList<String> companyItems = FXCollections.observableArrayList();
-    ObservableList<String> intervalItems = FXCollections.observableArrayList("1 minute", "5 minutes", "10 minutes");
+    private List<BarData> bars;
+    private List<BarData> subList;
+    private ScrollPane pane = new ScrollPane();
+    private Rectangle rectangle = new Rectangle();
+    private Group group;
+    private ObservableList<String> patternItems = FXCollections.observableArrayList();
+    private ObservableList<String> companyItems = FXCollections.observableArrayList();
+    private ObservableList<String> intervalItems = FXCollections.observableArrayList("1 minute", "5 minutes", "10 minutes");
     private int countPatterns;
     private int firstCountPatterns;
 
@@ -164,6 +161,8 @@ public class Controller implements Initializable {
                     alert.showAndWait();
                 }
 
+                bars.forEach(System.out::println);
+
                 pane.hvalueProperty().set(0);
                 pane.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
                 pane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -179,8 +178,6 @@ public class Controller implements Initializable {
 
                 getChart().setBarsToDisplay(subList);
                 getChart().setPrefWidth(bars.size() * CANDLE_GAP);
-
-                System.out.println("size = " + service.getStartDates().size());
 
                 setupLines();
 
@@ -273,6 +270,13 @@ public class Controller implements Initializable {
                             entries.add(entry);
                         }
                     } catch (IOException ex) {
+
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("Information");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Can not find memory.csv file!");
+                        alert.initOwner(borderPane.getScene().getWindow());
+                        alert.showAndWait();
 
                     } finally {
                         if (reader != null) {
@@ -469,31 +473,29 @@ public class Controller implements Initializable {
 
         lines = new ArrayList<>();
 
-        for (Integer date : service.getStartDates()) {
-            if (date < rightPos && date >= leftPos) {
-                System.out.println("date = " + date);
+        service.getStartDates().stream().filter(date -> rightPos > date && date >= leftPos).forEach(date -> {
+            System.out.println("date = " + date);
 
-                String currDate = ((CategoryAxis) getChart().getXAxis()).getCategories().get(date - leftPos);
+            String currDate = ((CategoryAxis) getChart().getXAxis()).getCategories().get(date - leftPos);
 
-                double pos = getChart().getXAxis().getDisplayPosition(currDate);
-                System.out.println("pos = " + pos);
-                System.out.println("currentADate = " + currDate);
-                System.out.println("pane = " + pane.getViewportBounds().getWidth());
-                System.out.println("chart = " + getChart().getWidth());
-                double shiftX = 69;
-                Line line = new Line();
+            double pos = getChart().getXAxis().getDisplayPosition(currDate);
+            System.out.println("pos = " + pos);
+            System.out.println("currentADate = " + currDate);
+            System.out.println("pane = " + pane.getViewportBounds().getWidth());
+            System.out.println("chart = " + getChart().getWidth());
+            double shiftX = 69;
+            Line line = new Line();
 
-                line.setStrokeWidth(0.5);
-                line.setStyle("-fx-stroke: red;");
-                System.out.println("p: " + pos);
-                line.setStartX(pos + shiftX);
-                line.setEndX(pos + shiftX);
-                line.setStartY(0);
-                line.setEndY(getChart().getHeight());
-                lines.add(line);
-                group.getChildren().add(line);
-            }
-        }
+            line.setStrokeWidth(0.5);
+            line.setStyle("-fx-stroke: red;");
+            System.out.println("p: " + pos);
+            line.setStartX(pos + shiftX);
+            line.setEndX(pos + shiftX);
+            line.setStartY(0);
+            line.setEndY(getChart().getHeight());
+            lines.add(line);
+            group.getChildren().add(line);
+        });
         for (Integer date : service.getDays()) {
             if (date < rightPos && date >= leftPos) {
                 System.out.println("day = " + date);
@@ -609,41 +611,32 @@ public class Controller implements Initializable {
 
     private void setUpZooming(final Rectangle rect, final Node zoomingNode) {
         final ObjectProperty<Point2D> mouseAnchor = new SimpleObjectProperty<>();
-        zoomingNode.setOnMousePressed(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                Node chartPlotBackground = getChart().lookup(".chart-plot-background");
-                final double shiftX = xSceneShift(chartPlotBackground);
-                double x = event.getSceneX() - shiftX;
-                fistrIndexInRange = getIndexToCopyFromData(getChart().getXAxis().getValueForDisplay(x), getChart().getData().get(0).getData());
+        zoomingNode.setOnMousePressed(event -> {
+            Node chartPlotBackground = getChart().lookup(".chart-plot-background");
+            final double shiftX = xSceneShift(chartPlotBackground);
+            double x = event.getSceneX() - shiftX;
+            fistrIndexInRange = getIndexToCopyFromData(getChart().getXAxis().getValueForDisplay(x), getChart().getData().get(0).getData());
 
-                mouseAnchor.set(new Point2D(event.getX(), event.getY()));
-                rect.setWidth(0);
-                rect.setHeight(0);
-            }
+            mouseAnchor.set(new Point2D(event.getX(), event.getY()));
+            rect.setWidth(0);
+            rect.setHeight(0);
         });
-        zoomingNode.setOnMouseDragged(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                double x = event.getX();
-                double y = event.getY();
-                rect.setX(Math.min(x, mouseAnchor.get().getX()));
-                rect.setY(Math.min(y, mouseAnchor.get().getY()));
-                rect.setWidth(Math.abs(x - mouseAnchor.get().getX()));
-                rect.setHeight(Math.abs(y - mouseAnchor.get().getY()));
-            }
+        zoomingNode.setOnMouseDragged(event -> {
+            double x = event.getX();
+            double y = event.getY();
+            rect.setX(Math.min(x, mouseAnchor.get().getX()));
+            rect.setY(Math.min(y, mouseAnchor.get().getY()));
+            rect.setWidth(Math.abs(x - mouseAnchor.get().getX()));
+            rect.setHeight(Math.abs(y - mouseAnchor.get().getY()));
         });
-        zoomingNode.setOnMouseReleased(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                Node chartPlotBackground = getChart().lookup(".chart-plot-background");
-                final double shiftX = xSceneShift(chartPlotBackground);
+        zoomingNode.setOnMouseReleased(event -> {
+            Node chartPlotBackground = getChart().lookup(".chart-plot-background");
+            final double shiftX = xSceneShift(chartPlotBackground);
 
-                double x = event.getSceneX() - shiftX;
-                lastIndexInRange = getIndexToCopyFromData(getChart().getXAxis().getValueForDisplay(x), getChart().getData().get(0).getData());
+            double x = event.getSceneX() - shiftX;
+            lastIndexInRange = getIndexToCopyFromData(getChart().getXAxis().getValueForDisplay(x), getChart().getData().get(0).getData());
 
-                segSize.setText(String.valueOf(Math.abs(lastIndexInRange - fistrIndexInRange)));
-            }
+            segSize.setText(String.valueOf(Math.abs(lastIndexInRange - fistrIndexInRange)));
         });
     }
 }

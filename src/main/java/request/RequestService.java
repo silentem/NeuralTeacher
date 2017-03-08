@@ -98,6 +98,8 @@ public class RequestService implements Request {
     public List<String> makeRequest(String uri) throws IOException {
         List<String> result = new ArrayList<>(1000);
 
+        System.out.println(uri);
+
         BufferedReader reader = null;
 
         try {
@@ -113,6 +115,7 @@ public class RequestService implements Request {
             String resultString;
             while ((resultString = reader.readLine()) != null) {
                 result.add(resultString);
+                System.out.println(resultString);
             }
         } finally {
             if (reader != null) {

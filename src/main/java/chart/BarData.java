@@ -218,8 +218,6 @@ public class BarData implements Serializable {
         sb.append(" High: ").append(high);
         sb.append(" Low: ").append(low);
         sb.append(" Close: ").append(close);
-        sb.append(" Volume: ").append(volume);
-        sb.append(" Open Int ").append(openInterest);
 
         return sb.toString();
     }//toString()
