@@ -19,7 +19,6 @@ public class RequestService implements Request {
     private String company;
     private Integer interval;
     private GregorianCalendar date = new GregorianCalendar();
-    private Date nextDate;
     private List<BarData> barDatas = new ArrayList<BarData>();
     private ArrayList<Integer> startDates = new ArrayList<Integer>();
     private ArrayList<Integer> days = new ArrayList<>();

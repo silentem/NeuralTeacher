@@ -56,7 +56,7 @@ import static sample.ChartController.getChart;
 public class CandleStickChart extends XYChart<String, Number> {
 
     SimpleDateFormat sdf = new SimpleDateFormat("MM:dd:HH:mm:ss");
-    protected static final Logger logger = Logger.getLogger(CandleStickChart.class.getName());
+//    protected static final Logger logger = Logger.getLogger(CandleStickChart.class.getName());
     protected int maxBarsToDisplay;
     protected ObservableList<XYChart.Series<String, Number>> dataSeries;
     protected BarData lastBar;
@@ -99,7 +99,7 @@ public class CandleStickChart extends XYChart<String, Number> {
         this.yAxis = yAxis;
         this.maxBarsToDisplay = maxBarsToDisplay;
         setPrefHeight(600);
-        xAxis.setTickLabelsVisible(false);
+        xAxis.setTickLabelsVisible(true);
         yAxis.autoRangingProperty().set(false);
         yAxis.forceZeroInRangeProperty().setValue(Boolean.FALSE);
         setTitle(title);
@@ -119,8 +119,8 @@ public class CandleStickChart extends XYChart<String, Number> {
             String label = "";
             label = sdf.format(bar.getDateTime().getTime());
             series.getData().add(new XYChart.Data<String, Number>(label, bar.getOpen(), bar));
-            logger.log(Level.INFO, "Adding bar with date/time: {0}", bar.getDateTime().getTime());
-            logger.log(Level.INFO, "Adding bar with price: {0}", bar.getOpen());
+//            logger.log(Level.INFO, "Adding bar with date/time: {0}", bar.getDateTime().getTime());
+//            logger.log(Level.INFO, "Adding bar with price: {0}", bar.getOpen());
         }
         dataSeries = FXCollections.observableArrayList(series);
         setData(dataSeries);
@@ -149,8 +149,8 @@ public class CandleStickChart extends XYChart<String, Number> {
         dataSeries.get(0).getData().get(datalength - 1).setYValue(bar.getOpen());
         dataSeries.get(0).getData().get(datalength - 1).setExtraValue(bar);
         String label = sdf.format(bar.getDateTime().getTime());
-        logger.log(Level.INFO, "Adding bar with actual time:  {0}", bar.getDateTime().getTime());
-        logger.log(Level.INFO, "Adding bar with formated time: {0}", label);
+//        logger.log(Level.INFO, "Adding bar with actual time:  {0}", bar.getDateTime().getTime());
+//        logger.log(Level.INFO, "Adding bar with formated time: {0}", label);
 
         lastBar = new BarData(bar.getDateTime(), bar.getClose(), bar.getClose(), bar.getClose(), bar.getClose(), 0);
         Data<String, Number> data = new XYChart.Data<String, Number>(label, lastBar.getOpen(), lastBar);
@@ -165,13 +165,13 @@ public class CandleStickChart extends XYChart<String, Number> {
     public void updateLast(double price) {
         if (lastBar != null) {
             lastBar.update(price);
-            logger.log(Level.INFO, "Updating last bar with date/time: {0}", lastBar.getDateTime().getTime());
+//            logger.log(Level.INFO, "Updating last bar with date/time: {0}", lastBar.getDateTime().getTime());
 
             int datalength = dataSeries.get(0).getData().size();
             dataSeries.get(0).getData().get(datalength - 1).setYValue(lastBar.getOpen());
 
             dataSeries.get(0).getData().get(datalength - 1).setExtraValue(lastBar);
-            logger.log(Level.INFO, "Updating last bar with formatteddate/time: {0}", dataSeries.get(0).getData().get(datalength - 1).getXValue());
+//            logger.log(Level.INFO, "Updating last bar with formatteddate/time: {0}", dataSeries.get(0).getData().get(datalength - 1).getXValue());
         }
     }
 
@@ -386,7 +386,7 @@ public class CandleStickChart extends XYChart<String, Number> {
                 }
             }
         } catch (NullPointerException e) {
-            logger.log(Level.INFO, "Chart have no data!");
+//            logger.log(Level.INFO, "Chart have no data!");
         }
     }
 

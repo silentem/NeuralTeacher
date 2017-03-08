@@ -23,6 +23,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
 import request.RequestService;
 
 import java.io.*;
@@ -312,7 +313,7 @@ public class Controller implements Initializable {
                     firstCountPatterns = countPatterns;
                 }
 
-                if (Math.abs(fistrIndexInRange - lastIndexInRange) > 20 && Math.abs(fistrIndexInRange - lastIndexInRange) <= 30) {
+                if (Math.abs(fistrIndexInRange - lastIndexInRange) >= 20 && Math.abs(fistrIndexInRange - lastIndexInRange) <= 25) {
 
                     ///writing to memory.csv
                     btnSaveToMemory.setDisable(true);
@@ -325,9 +326,9 @@ public class Controller implements Initializable {
                         writer = new BufferedWriter(new FileWriter("memory.csv", true));
                         int sizeOfList = resultList.size();
                         //доповнення нулями
-                        if (sizeOfList < 30) {
+                        if (sizeOfList < 25) {
                             BarData firstBar = resultList.get(0);
-                            while (sizeOfList++ < 30) {
+                            while (sizeOfList++ < 25) {
                                 writer.write(firstBar.getStringToFile());
                             }
                         }
@@ -351,6 +352,11 @@ public class Controller implements Initializable {
                     }
 
                     btnSaveToMemory.setDisable(false);
+                    String toastMsg = "Data saved: " + segSize.getText();
+                    int toastMsgTime = 2000; //3.5 seconds
+                    int fadeInTime = 500; //0.5 seconds
+                    int fadeOutTime= 500; //0.5 seconds
+                    Toast.makeText(((Stage) borderPane.getScene().getWindow()), toastMsg, toastMsgTime, fadeInTime, fadeOutTime);
                 } else {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Information");
@@ -628,15 +634,22 @@ public class Controller implements Initializable {
             rect.setY(Math.min(y, mouseAnchor.get().getY()));
             rect.setWidth(Math.abs(x - mouseAnchor.get().getX()));
             rect.setHeight(Math.abs(y - mouseAnchor.get().getY()));
-        });
-        zoomingNode.setOnMouseReleased(event -> {
             Node chartPlotBackground = getChart().lookup(".chart-plot-background");
             final double shiftX = xSceneShift(chartPlotBackground);
 
-            double x = event.getSceneX() - shiftX;
-            lastIndexInRange = getIndexToCopyFromData(getChart().getXAxis().getValueForDisplay(x), getChart().getData().get(0).getData());
+            double x1 = event.getSceneX() - shiftX;
+            lastIndexInRange = getIndexToCopyFromData(getChart().getXAxis().getValueForDisplay(x1), getChart().getData().get(0).getData());
 
             segSize.setText(String.valueOf(Math.abs(lastIndexInRange - fistrIndexInRange)));
         });
+//        zoomingNode.setOnMouseReleased(event -> {
+//            Node chartPlotBackground = getChart().lookup(".chart-plot-background");
+//            final double shiftX = xSceneShift(chartPlotBackground);
+//
+//            double x = event.getSceneX() - shiftX;
+//            lastIndexInRange = getIndexToCopyFromData(getChart().getXAxis().getValueForDisplay(x), getChart().getData().get(0).getData());
+//
+//            segSize.setText(String.valueOf(Math.abs(lastIndexInRange - fistrIndexInRange)));
+//        });
     }
 }
